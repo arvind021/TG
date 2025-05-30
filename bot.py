@@ -61,17 +61,28 @@ def calculate_bollinger_bands(prices, period=20):
     return round(upper, 2), round(lower, 2)
 
 def calculate_adx(highs, lows, closes, period=14):
-    plus_dm = np.array(highs[1:]) - np.array(highs[:-1])
-    minus_dm = np.array(lows[:-1]) - np.array(lows[1:])
+    highs = np.array(highs)
+    lows = np.array(lows)
+    closes = np.array(closes)
+
+    plus_dm = highs[1:] - highs[:-1]
+    minus_dm = lows[:-1] - lows[1:]
     plus_dm[plus_dm < 0] = 0
     minus_dm[minus_dm < 0] = 0
-    tr = np.maximum.reduce([np.array(highs[1:]) - np.array(lows[1:]),
-                            abs(np.array(highs[1:]) - np.array(closes[:-1])),
-                            abs(np.array(lows[1:]) - np.array(closes[:-1]))])
+
+    tr1 = highs[1:] - lows[1:]
+    tr2 = np.abs(highs[1:] - closes[:-1])
+    tr3 = np.abs(lows[1:] - closes[:-1])
+    tr = np.maximum.reduce([tr1, tr2, tr3])
+
     atr = np.convolve(tr, np.ones(period)/period, mode='valid')
-    plus_di = 100 * np.convolve(plus_dm[period-1:], np.ones(period)/period, mode='valid') / atr
-    minus_di = 100 * np.convolve(minus_dm[period-1:], np.ones(period)/period, mode='valid') / atr
-    dx = 100 * np.abs(plus_di - minus_di) / (plus_di + minus_di)
+    plus_di_raw = np.convolve(plus_dm, np.ones(period)/period, mode='valid')[:len(atr)]
+    minus_di_raw = np.convolve(minus_dm, np.ones(period)/period, mode='valid')[:len(atr)]
+
+    plus_di = 100 * plus_di_raw / atr
+    minus_di = 100 * minus_di_raw / atr
+    dx = 100 * np.abs(plus_di - minus_di) / (plus_di + minus_di + 1e-6)
+
     adx = np.mean(dx[-period:])
     return round(adx, 2)
 
@@ -202,3 +213,4 @@ def handle_start(message):
     bot.reply_to(message, help_text, parse_mode='Markdown')
 
 bot.polling()
+
