@@ -7,7 +7,7 @@ import io
 import os
 
 # Telegram Bot Token
-API_TOKEN = '8057384324:AAFiDKf4vZZdS0hsmu2hMk4GnS2Bhpiz5tY'
+API_TOKEN = '7664042669:AAFOuogg0eEhlEgvmQ3U6xUF7dITqCrfda0'
 bot = telebot.TeleBot(API_TOKEN)
 
 # Get Binance candles dynamically based on symbol and interval
